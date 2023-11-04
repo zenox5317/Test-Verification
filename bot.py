@@ -4,7 +4,7 @@ import random
 import string
 import time
 import requests
-
+from urllib.parse import quote
 
 API_ID = int(getenv("API_ID", ""))
 API_HASH = getenv("API_HASH", "")
@@ -28,8 +28,6 @@ async def shrt_link(link, message):
         data = res.json()
         slink = data.get('shortenedUrl')
         return slink
-        
-
 
 @vrfybot.on_message(filters.command('start'))
 async def start(bot, message):
@@ -37,13 +35,12 @@ async def start(bot, message):
 
     usr_cmd = message.text.split("_", 1)[-1]
 
-   if usr_cmd == "/start":
-        try: 
-            await message.reply("hello, I am verify bot")
+    if usr_cmd == "/start":
+        try:
+            await message.reply("Hello, I am the verify bot")
         except Exception as e:
             print(f"Error replying to message: {e}")
 
-  
     elif usr_cmd.split("-", 1)[0] == "verify":
         parts = usr_cmd.split("-")
         if len(parts) == 3 and parts[0] == "verify":
@@ -51,27 +48,16 @@ async def start(bot, message):
             if user_id in VERIFIED and VERIFIED[user_id]['token'] == usr_token:
                 current_time = time.time()
                 if current_time - VERIFIED[user_id]['timestamp'] < 24 * 60 * 60:
-                    await bot.reply_text("You are Verified for today.")
+                    await bot.reply_text("You are verified for today.")
                     VERIFIED.pop(user_id)
                 else:
-                    await bot.reply_text("verify token has expired. Please try again later.")
+                    await bot.reply_text("Verification token has expired. Please try again later.")
             else:
                 await bot.reply_text("Invalid verify token.")
         else:
-            await bot.reply_text ("Invalid verify link.")
-     else:
-         token = await generate_random_string(10)
-         url = f"https://t.me/{bot.username}?start=verify-{user_id}-{verification_token}"
+            await bot.reply_text("Invalid verify link.")
+    else:
+        verification_token = await generate_random_string(10)
+        verification_url = f"https://t.me/{bot.username}?start=verify-{user_id}-{verification_token}"
 
-         short_url = await shrt_link(url)
-
-         if short_url:
-            await bot.reply_text(f"Click on this link to verify: {short_url}")
-            VERIFIED[user_id] = {
-                'token': usr_token,
-                'timestamp': time.time()
-            }
-         else:
-            await bot.reply_text("Error shortening the URL. Please try again later.")
-
-verfybot.run()
+        shortened_url = await shrt_link(
