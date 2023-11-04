@@ -59,20 +59,19 @@ async def start(bot, message):
                 await bot.reply_text("Invalid verify token.")
         else:
             await bot.reply_text ("Invalid verify link.")
-        else:
-            token = await generate_random_string(10)
-            url = f"https://t.me/{bot.username}?start=verify-{user_id}-{verification_token}"
+     else:
+         token = await generate_random_string(10)
+         url = f"https://t.me/{bot.username}?start=verify-{user_id}-{verification_token}"
 
-            short_url = await shrt_link(url)
+         short_url = await shrt_link(url)
 
-            if short_url:
-                await bot.reply_text(f"Click on this link to verify: {short_url}")
-                VERIFIED[user_id] = {
-                    'token': usr_token,
-                    'timestamp': time.time()
-                }
-            else:
-                await bot.reply_text("Error shortening the URL. Please try again later.")
-
+         if short_url:
+            await bot.reply_text(f"Click on this link to verify: {short_url}")
+            VERIFIED[user_id] = {
+                'token': usr_token,
+                'timestamp': time.time()
+            }
+         else:
+            await bot.reply_text("Error shortening the URL. Please try again later.")
 
 verfybot.run()
