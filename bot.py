@@ -14,7 +14,8 @@ API = getenv("API", "")
 
 vrfybot = Client("vrfybot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH, workers=500, in_memory=True)
 
-VERIFIED = {}
+VERIFIED_USERS = {}
+TOKENS = {}
 
 async def generate_random_string(num: int):
     characters = string.ascii_letters + string.digits
@@ -39,17 +40,19 @@ async def start(bot, message):
         try:
             await message.reply("Hello, I am the verify bot")
         except Exception as e:
-            print(f"Error replying to message: {e}")
+            print(f"Error replying to the message: {e}")
 
     elif usr_cmd.split("-", 1)[0] == "verify":
         parts = usr_cmd.split("-")
         if len(parts) == 3 and parts[0] == "verify":
             usr_token = parts[2]
-            if user_id in VERIFIED and VERIFIED[user_id]['token'] == usr_token:
+            if user_id in VERIFIED_USERS:
+                await bot.reply_text("You are already verified.")
+            elif user_id in TOKENS and TOKENS[user_id] == usr_token:
                 current_time = time.time()
                 if current_time - VERIFIED[user_id]['timestamp'] < 24 * 60 * 60:
                     await bot.reply_text("You are verified for today.")
-                    VERIFIED.pop(user_id)
+                    VERIFIED_USERS.append(user_id)
                 else:
                     await bot.reply_text("Verification token has expired. Please try again later.")
             else:
@@ -57,7 +60,18 @@ async def start(bot, message):
         else:
             await bot.reply_text("Invalid verify link.")
     else:
-        verification_token = await generate_random_string(10)
-        verification_url = f"https://t.me/{bot.username}?start=verify-{user_id}-{verification_token}"
+        if user_id in VERIFIED_USERS:
+            await bot.reply_text("You are already verified.")
+        else:
+            token = await generate_random_string(10)
+            TOKENS[user_id] = token
+            url = f"https://t.me/{bot.username}?start=verify-{user_id}-{token}"
 
-        shortened_url = await shrt_link(
+            short_url = await shrt_link(url, message)
+
+            if short_url:
+                await bot.reply_text(f"Click on this link to verify: \n\n{short_url}")
+            else:
+                await bot.reply_text("Error in generating link, Please try again later.")
+
+vrfybot.run()
