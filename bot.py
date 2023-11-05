@@ -38,7 +38,7 @@ async def start(bot, message):
 
     if usr_cmd == "/start":
         try:
-            await message.reply("Hello, I am the verify bot")
+            await message.reply_text("Hello, I am the verify bot")
         except Exception as e:
             print(f"Error replying to the message: {e}")
 
@@ -51,27 +51,27 @@ async def start(bot, message):
             elif user_id in TOKENS and TOKENS[user_id] == usr_token:
                 current_time = time.time()
                 if current_time - VERIFIED[user_id]['timestamp'] < 24 * 60 * 60:
-                    await bot.reply_text("You are verified for today.")
+                    await message.reply_text("You are verified for today.")
                     VERIFIED_USERS.append(user_id)
                 else:
-                    await bot.reply_text("Verification token has expired. Please try again later.")
+                    await message.reply_text("Verification token has expired. Please try again later.")
             else:
-                await bot.reply_text("Invalid verify token.")
+                await message.reply_text("Invalid verify token.")
         else:
-            await bot.reply_text("Invalid verify link.")
+            await message.reply_text("Invalid verify link.")
     else:
         if user_id in VERIFIED_USERS:
-            await bot.reply_text("You are already verified.")
+            await message.reply_text("You are already verified.")
         else:
             token = await generate_random_string(10)
             TOKENS[user_id] = token
-            url = f"https://t.me/{bot.username}?start=verify-{user_id}-{token}"
+            url = f"https://t.me/{bot.get_me().username}?start=verify-{user_id}-{token}"
 
             short_url = await shrt_link(url, message)
 
             if short_url:
-                await bot.reply_text(f"Click on this link to verify: \n\n{short_url}")
+                await message.reply_text(f"Click on this link to verify: \n\n{short_url}")
             else:
-                await bot.reply_text("Error in generating link, Please try again later.")
+                await message.reply_text("Error in generating link, Please try again later.")
 
 vrfybot.run()
